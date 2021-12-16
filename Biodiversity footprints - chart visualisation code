@@ -1,0 +1,408 @@
+import numpy as np
+import plotly
+import plotly.io as pio
+import pymrio
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn
+import plotly_express as px
+################################################################################################################################################################
+
+''' This file concerns the code for the visualisations seen in Figure 1 and Figure 3 of the results section'''
+
+################################################################################################################################################################
+exiobase3 = pymrio.load_all('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/Exiobase3 folder/Exiobase3 coefficient tables (latest)')
+exiobase3.Y = pd.DataFrame(exiobase3.Y).groupby(axis = 0, level=0, sort=False).sum()
+print(exiobase3.Y)
+exiobase3.Y = exiobase3.Y.sum()
+exiobase3.Y = pd.DataFrame(exiobase3.Y.T)
+exiobase3.Y.set_axis(['Total Household Consumption [Meur]'],axis = 1,inplace= True )
+print(exiobase3.Y)
+
+Footprint_tables_D_cba  = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_cba_total.csv')
+Footprint_tables_D_pba = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_pba_total.csv')
+Footprint_tables_D_imp = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_imp_biod.csv')
+Footprint_tables_D_exp = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_exp_biod.csv')
+CF_tables  = pd.read_csv('C:/Users/Cillian/OneDrive/Documents/NTNU project documents/CF sheets/CSV CF files/Full_CF_table_median_approach.csv')
+print(Footprint_tables_D_cba.shape)
+print(Footprint_tables_D_pba.shape)
+print(Footprint_tables_D_imp.shape)
+print(Footprint_tables_D_exp.shape)
+
+
+Land_occupation_label = ['Land Occupation Average']*6
+Climate_change_label = ['Climate Change - Terrestrial ecosystems core']*19
+Water_consumption_label = ['Water Consumption - Terrestrial & Aquatic ecosystems core']*103
+Freshwater_consumption_label = ['Freshwater Eutrophication']*4
+Marine_eutrophication_label = ['Marine Eutrophication']
+
+index_labels = Land_occupation_label + Climate_change_label + Water_consumption_label + Freshwater_consumption_label + Marine_eutrophication_label
+liste = Footprint_tables_D_cba.iloc[0:,0].values
+column_index2 = Footprint_tables_D_cba.iloc[0,1:].values
+CF_tables = CF_tables.iloc[0:,3:]
+
+column_index = CF_tables.columns.to_list()
+print(column_index)
+column_index_list_D_exp =  []
+n =200
+for i in column_index:
+    column_index_list_D_exp = column_index_list_D_exp + [i]*n
+Footprint_tables_D_cba = pd.DataFrame(Footprint_tables_D_cba.iloc[0:,1:].values, columns = column_index)
+Footprint_tables_D_pba = pd.DataFrame(Footprint_tables_D_pba.iloc[0:,1:].values,columns=column_index)
+Footprint_tables_D_imp = pd.DataFrame(Footprint_tables_D_imp.iloc[1:,1:].values,columns=column_index_list_D_exp)
+Footprint_tables_D_exp = pd.DataFrame(Footprint_tables_D_exp.iloc[1:,1:].values,columns=column_index_list_D_exp)
+print(Footprint_tables_D_exp.shape)
+print(Footprint_tables_D_exp)
+print(Footprint_tables_D_cba.shape)
+Footprint_tables_D_exp = Footprint_tables_D_exp.astype(float)
+Footprint_tables_D_cba = Footprint_tables_D_cba.astype(float)
+Footprint_tables_D_pba = Footprint_tables_D_pba.astype(float)
+Footprint_tables_D_imp = Footprint_tables_D_imp.astype(float)
+Footprint_tables_D_imp = Footprint_tables_D_imp.groupby(axis=1,level =0, sort= False).sum()
+Footprint_tables_D_exp = Footprint_tables_D_exp.groupby(axis=1,level =0, sort= False).sum()
+print(Footprint_tables_D_exp)
+print(Footprint_tables_D_cba.shape)
+print(Footprint_tables_D_pba.shape)
+print(Footprint_tables_D_imp.shape)
+print(Footprint_tables_D_exp.shape)
+column_index = Footprint_tables_D_cba.columns.tolist()
+
+
+Footprint_tables_D_cba = pd.DataFrame(Footprint_tables_D_cba.values, index= [index_labels,liste], columns=column_index)
+Footprint_tables_D_pba = pd.DataFrame(Footprint_tables_D_pba.values, index= [index_labels,liste], columns=column_index)
+Footprint_tables_D_imp = pd.DataFrame(Footprint_tables_D_imp.values, index= [index_labels,liste], columns=column_index)
+Footprint_tables_D_exp= pd.DataFrame(Footprint_tables_D_exp.values, index= [index_labels,liste], columns=column_index)
+
+
+Footprint_tables_D_cba.rename_axis(index = ['Impact Category','stressor'])
+Footprint_tables_D_pba.rename_axis(index = ['Impact Category','stressor'])
+Footprint_tables_D_imp.rename_axis(index = ['Impact Category','stressor'])
+Footprint_tables_D_exp.rename_axis(index = ['Impact Category','stressor'])
+
+
+
+Footprint_tables_D_cba = pd.DataFrame(Footprint_tables_D_cba).T
+Footprint_tables_D_pba = pd.DataFrame(Footprint_tables_D_pba).T
+Footprint_tables_D_imp = pd.DataFrame(Footprint_tables_D_imp).T
+Footprint_tables_D_exp = pd.DataFrame(Footprint_tables_D_exp).T
+
+Footprint_tables_D_cba = pd.DataFrame(Footprint_tables_D_cba.groupby(level = 0, axis = 1, sort = False ).sum())
+Footprint_tables_D_pba = pd.DataFrame(Footprint_tables_D_pba.groupby(level = 0, axis = 1, sort = False).sum())
+Footprint_tables_D_imp = pd.DataFrame(Footprint_tables_D_imp.groupby(level = 0, axis = 1, sort = False).sum())
+Footprint_tables_D_exp = pd.DataFrame(Footprint_tables_D_exp.groupby(level = 0, axis = 1, sort = False).sum())
+
+Footprint_tables_D_cba['Continent'] = ['Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe', 'North America','Asia & Oceania','Asia & Oceania','North America','Asia & Oceania','Latin America','Asia & Oceania','Latin America','Europe','Asia & Oceania','Europe','Middle East','Asia & Oceania','Europe','Asia & Oceania','Africa','Asia & Oceania','Latin America','Europe','Africa','Middle East']
+Footprint_tables_D_cba['Countries_short_name'] = ['AUT','BEL','BUL','CYP','CZE','DEU','DEN','EST','ESP','FIN','FRA','GRC','CRI','HUN','IRE','ITA', 'LTU','LUX','LVA','MLT','NLD','POL','PRT','ROU','SWE','SVN','SLK','GBR','USA','JPN','CHN','CAN','KOR','BRA','IND','MEX','RUS','AUS','CHE','TUR','TWN','NOR','IDN','ZAF','ROW Asi','ROW Amer.', 'ROW Eur.','ROW Afr.','ROW Mid.E']
+Footprint_tables_D_cba['Countries_full_name'] = ['Austria','Belgium','Bulgaria','Cyprus','Czech Rep.','Germany','Denmark','Estonia','Spain','Finland','France','Greece','Croatia','Hungary','Ireland','Italy', 'Lithuania','Luxembourg','Latvia','Malta','Netherlands','Poland','Portugal','Romania','Sweden','Slovenia','Slovakia','Great Britain','USA','Japan','China','Canada','South Korea','Brazil','India','Mexico','Russia','Australia','Switzerland','Turkey','Taiwan','Norway','Indonesia','South Africa','ROW Asia','ROW Americas', 'ROW Europe','ROW Africa','ROW Middle East']
+
+Footprint_tables_D_cba['region'] = Footprint_tables_D_cba.index.tolist()
+Footprint_tables_D_pba['Continent'] = ['Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe', 'North America','Asia & Oceania','Asia & Oceania','North America','Asia & Oceania','Latin America','Asia & Oceania','Latin America','Europe','Asia & Oceania','Europe','Middle East','Asia & Oceania','Europe','Asia & Oceania','Africa','Asia & Oceania','Latin America','Europe','Africa','Middle East']
+Footprint_tables_D_pba['Countries_full_name'] = ['Austria','Belgium','Bulgaria','Cyprus','Czech Republic','Germany','Denmark','Estonia','Spain','Finland','France','Greece','Croatia','Hungary','Ireland','Italy', 'Lithuania','Luxembourg','Latvia','Malta','Netherlands','Poland','Portugal','Romania','Sweden','Slovenia','Slovakia','Great Britain','United States','Japan','China','Canada','South Korea','Brazil','India','Mexico','Russia','Australia','Switzerland','Turkey','Taiwan','Norway','Indonesia','South Africa','ROW Asia & Pacific','ROW Americas', 'ROW Europe','ROW Africa','ROW Middle East']
+Footprint_tables_D_pba['region'] = Footprint_tables_D_cba.index.tolist()
+Footprint_tables_D_imp['Continent'] = ['Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe', 'North America','Asia & Oceania','Asia & Oceania','North America','Asia & Oceania','Latin America','Asia & Oceania','Latin America','Europe','Asia & Oceania','Europe','Middle East','Asia & Oceania','Europe','Asia & Oceania','Africa','Asia & Oceania','Latin America','Europe','Africa','Middle East']
+Footprint_tables_D_imp['Countries_full_name'] = ['Austria','Belgium','Bulgaria','Cyprus','Czech Republic','Germany','Denmark','Estonia','Spain','Finland','France','Greece','Croatia','Hungary','Ireland','Italy', 'Lithuania','Luxembourg','Latvia','Malta','Netherlands','Poland','Portugal','Romania','Sweden','Slovenia','Slovakia','Great Britain','United States','Japan','China','Canada','South Korea','Brazil','India','Mexico','Russia','Australia','Switzerland','Turkey','Taiwan','Norway','Indonesia','South Africa','ROW Asia & Pacific','ROW Americas', 'ROW Europe','ROW Africa','ROW Middle East']
+Footprint_tables_D_imp['region'] = Footprint_tables_D_cba.index.tolist()
+Footprint_tables_D_exp['Continent'] = ['Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe', 'North America','Asia & Oceania','Asia & Oceania','North America','Asia & Oceania','Latin America','Asia & Oceania','Latin America','Europe','Asia & Oceania','Europe','Middle East','Asia & Oceania','Europe','Asia & Oceania','Africa','Asia & Oceania','Latin America','Europe','Africa','Middle East']
+Footprint_tables_D_exp['Countries_full_name'] = ['Austria','Belgium','Bulgaria','Cyprus','Czech Republic','Germany','Denmark','Estonia','Spain','Finland','France','Greece','Croatia','Hungary','Ireland','Italy', 'Lithuania','Luxembourg','Latvia','Malta','Netherlands','Poland','Portugal','Romania','Sweden','Slovenia','Slovakia','Great Britain','United States','Japan','China','Canada','South Korea','Brazil','India','Mexico','Russia','Australia','Switzerland','Turkey','Taiwan','Norway','Indonesia','South Africa','ROW Asia & Pacific','ROW Americas', 'ROW Europe','ROW Africa','ROW Middle East']
+Footprint_tables_D_exp['region'] = Footprint_tables_D_cba.index.tolist()
+
+
+
+Population_df = pd.DataFrame(pd.read_csv('C:/Users/Cillian/OneDrive/Documents/NTNU project documents/CF sheets/Population data/World population data_World bank.csv'))
+Population_df = Population_df['2011']
+Population_df.astype(float)
+
+Population_df = pd.DataFrame(Population_df.iloc[0:49])
+Footprint_tables_D_cba['Population'] = Population_df['2011'].tolist()
+Footprint_tables_D_cba['Land Occupation Average_cap'] = (Footprint_tables_D_cba['Land Occupation Average']/Footprint_tables_D_cba['Population'])/4
+Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core_cap'] = (Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core']/Footprint_tables_D_cba['Population'])/4
+Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'] = (Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core']/Footprint_tables_D_cba['Population'])/4
+Footprint_tables_D_cba['Freshwater Eutrophication_cap'] = (Footprint_tables_D_cba['Freshwater Eutrophication']/Footprint_tables_D_cba['Population'])/4
+Footprint_tables_D_cba['Marine Eutrophication_cap'] = (Footprint_tables_D_cba['Marine Eutrophication']/Footprint_tables_D_cba['Population'])/4
+Footprint_tables_D_cba['Total_Footprint'] = (Footprint_tables_D_cba['Land Occupation Average'] + Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core'] + Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core'] + Footprint_tables_D_cba['Freshwater Eutrophication'] + Footprint_tables_D_cba['Marine Eutrophication'])        #Categories consider different taxanomic species, therefore an average approach is used to quantify impact
+Footprint_tables_D_cba['Total_Footprint_cap'] = Footprint_tables_D_cba['Land Occupation Average_cap'] + Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core_cap'] + Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'] + Footprint_tables_D_cba['Freshwater Eutrophication_cap'] + Footprint_tables_D_cba['Marine Eutrophication_cap']
+Footprint_tables_D_cba['Household_Consumption_expenditure'] = exiobase3.Y['Total Household Consumption [Meur]'].values
+Footprint_tables_D_cba['Household_Consumption_expenditure_cap'] = Footprint_tables_D_cba['Household_Consumption_expenditure'] / Footprint_tables_D_cba['Population']
+#######################################################################################################################################################################################################################################################################################################################################################
+Footprint_tables_D_pba['Population'] = Population_df['2011'].tolist()
+Footprint_tables_D_pba['Land Occupation Average_cap'] = (Footprint_tables_D_pba['Land Occupation Average']/Footprint_tables_D_pba['Population'])/4
+Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core_cap'] = (Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core']/Footprint_tables_D_pba['Population'])/4
+Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'] = (Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core']/Footprint_tables_D_pba['Population'])/4
+Footprint_tables_D_pba['Freshwater Eutrophication_cap'] = (Footprint_tables_D_pba['Freshwater Eutrophication']/Footprint_tables_D_pba['Population'])/4
+Footprint_tables_D_pba['Marine Eutrophication_cap'] = (Footprint_tables_D_pba['Marine Eutrophication']/Footprint_tables_D_pba['Population'])/4
+Footprint_tables_D_pba['Total_Footprint'] = (Footprint_tables_D_pba['Land Occupation Average'] + Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core'] + Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core'] + Footprint_tables_D_pba['Freshwater Eutrophication'] + Footprint_tables_D_pba['Marine Eutrophication'])
+Footprint_tables_D_pba['Total_Footprint_cap'] = Footprint_tables_D_pba['Land Occupation Average_cap'] + Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core_cap'] + Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'] + Footprint_tables_D_pba['Freshwater Eutrophication_cap'] + Footprint_tables_D_pba['Marine Eutrophication_cap']
+
+###############################################################################################################################################################################################################################################################################################################################################################
+Footprint_tables_D_imp['Population'] = Population_df['2011'].tolist()
+Footprint_tables_D_imp['Land Occupation Average_cap'] = (Footprint_tables_D_imp['Land Occupation Average']/Footprint_tables_D_imp['Population'])/4
+Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core_cap'] = (Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core']/Footprint_tables_D_pba['Population'])/4
+Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'] = (Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core']/Footprint_tables_D_pba['Population'])/4
+Footprint_tables_D_imp['Freshwater Eutrophication_cap'] = (Footprint_tables_D_imp['Freshwater Eutrophication']/Footprint_tables_D_imp['Population'])/4
+Footprint_tables_D_imp['Marine Eutrophication_cap'] = (Footprint_tables_D_imp['Marine Eutrophication']/Footprint_tables_D_imp['Population'])/4
+Footprint_tables_D_imp['Total_Footprint'] = (Footprint_tables_D_imp['Land Occupation Average'] + Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core'] + Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core'] + Footprint_tables_D_imp['Freshwater Eutrophication'] + Footprint_tables_D_imp['Marine Eutrophication'])
+Footprint_tables_D_imp['Total_Footprint_cap'] = Footprint_tables_D_imp['Land Occupation Average_cap'] + Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core_cap'] + Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'] + Footprint_tables_D_imp['Freshwater Eutrophication_cap'] + Footprint_tables_D_imp['Marine Eutrophication_cap']
+################################################################################################################################################################################################################################################################################################################################################
+Footprint_tables_D_cba['Imported_Footprint_share'] = Footprint_tables_D_imp['Total_Footprint'] / Footprint_tables_D_cba['Total_Footprint']
+Footprint_tables_D_cba['Per_Cap_Imported_share'] = Footprint_tables_D_imp['Total_Footprint_cap'] / Footprint_tables_D_cba['Total_Footprint_cap']
+Footprint_tables_D_cba['Land_Imported_Footprint_share'] = Footprint_tables_D_imp['Land Occupation Average'] / Footprint_tables_D_cba['Land Occupation Average']
+Footprint_tables_D_cba['Land_Per_Cap_Imported_share'] = Footprint_tables_D_imp['Land Occupation Average_cap'] / Footprint_tables_D_cba['Land Occupation Average_cap']
+
+#################################################################################################################################################################################################################################################################################################################################################
+Footprint_tables_D_exp['Population'] = Population_df['2011'].tolist()
+Footprint_tables_D_exp['Land Occupation Average_cap'] = (Footprint_tables_D_exp['Land Occupation Average']/Footprint_tables_D_exp['Population'])/4
+Footprint_tables_D_exp['Climate Change - Terrestrial ecosystems core_cap'] = (Footprint_tables_D_exp['Climate Change - Terrestrial ecosystems core']/Footprint_tables_D_exp['Population'])/4
+Footprint_tables_D_exp['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'] = (Footprint_tables_D_exp['Water Consumption - Terrestrial & Aquatic ecosystems core']/Footprint_tables_D_exp['Population'])/4
+Footprint_tables_D_exp['Freshwater Eutrophication_cap'] = (Footprint_tables_D_exp['Freshwater Eutrophication']/Footprint_tables_D_exp['Population'])/4
+Footprint_tables_D_exp['Marine Eutrophication_cap'] = (Footprint_tables_D_exp['Marine Eutrophication']/Footprint_tables_D_exp['Population'])/4
+
+Footprint_tables_D_exp['Total_Footprint'] = (Footprint_tables_D_exp['Land Occupation Average'] + Footprint_tables_D_exp['Climate Change - Terrestrial ecosystems core'] + Footprint_tables_D_exp['Water Consumption - Terrestrial & Aquatic ecosystems core'] + Footprint_tables_D_exp['Freshwater Eutrophication']+Footprint_tables_D_exp['Marine Eutrophication'])
+Footprint_tables_D_exp['Total_Footprint_cap'] = Footprint_tables_D_exp['Land Occupation Average_cap'] + Footprint_tables_D_exp['Climate Change - Terrestrial ecosystems core_cap'] + Footprint_tables_D_exp['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'] + Footprint_tables_D_exp['Freshwater Eutrophication_cap'] + Footprint_tables_D_exp['Marine Eutrophication_cap']
+
+###############################################################################################################################################################################################################################################################################################################################################################
+Footprint_tables_D_pba['Exported_Footprint_share'] = Footprint_tables_D_exp['Total_Footprint'] / Footprint_tables_D_pba['Total_Footprint']
+Footprint_tables_D_pba['Per_Cap_Imported_share'] = Footprint_tables_D_exp['Total_Footprint_cap'] / Footprint_tables_D_pba['Total_Footprint_cap']
+###############################################################################################################################################################################################################################################################################################################################################################
+Footprint_tables_D_exp = Footprint_tables_D_exp.sort_values(['Total_Footprint'], ascending = [False])
+Footprint_tables_D_imp = Footprint_tables_D_imp.sort_values(['Total_Footprint'], ascending = [False])
+Footprint_tables_D_cba = Footprint_tables_D_cba.sort_values(['Total_Footprint'], ascending = [False])
+Footprint_tables_D_pba = Footprint_tables_D_pba.sort_values(['Total_Footprint'], ascending = [False])
+Footprint_tables_D_exp.to_csv('Biodiversity_footprint_tables_D_imp.csv')
+Footprint_tables_D_imp.to_csv('Biodiversity_footprint_tables_D_imp.csv')
+Footprint_tables_D_pba.to_csv('Biodiversity_footprint_tables_D_pba.csv')
+Footprint_tables_D_cba.to_csv('Biodiversity_footprint_tables_D_cba.csv')
+###############################################################################################################################################################################################################################################################################################################################################################
+
+import matplotlib.pyplot as plt
+
+print(Footprint_tables_D_cba['Marine Eutrophication'])
+print(Footprint_tables_D_cba['Countries_full_name'])
+labels = [Footprint_tables_D_cba['Countries_full_name'].values]
+Land_footprint = [Footprint_tables_D_cba['Land Occupation Average']]
+print(len(Footprint_tables_D_cba.index))
+Climate_footprint = [Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core'].tolist()]
+Water_footprint = [Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core'].tolist()]
+Freshwater_eutrophication_footprint = [Footprint_tables_D_cba['Freshwater Eutrophication'].tolist()]
+Marine_eutrophication_footprint = [Footprint_tables_D_cba['Marine Eutrophication'].tolist()]
+x = np.arange(0, len(Footprint_tables_D_cba.index),1)
+print(x)
+#figsize=
+
+fig,(ax1,ax2) =plt.subplots( ncols=2, figsize = (15, 6),sharey= True)
+ax1.bar(x,Footprint_tables_D_cba['Land Occupation Average'], width = 0.8)
+ax1.bar(x,Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core'], bottom= Footprint_tables_D_cba['Land Occupation Average'], width = 0.8 )
+ax1.bar(x,Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core'], bottom= (Footprint_tables_D_cba['Land Occupation Average']+Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core']), width = 0.8  )
+ax1.bar(x,Footprint_tables_D_cba['Freshwater Eutrophication'], bottom= (Footprint_tables_D_cba['Land Occupation Average']+Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core']+Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core']), width = 0.8 )
+ax1.bar(x,Footprint_tables_D_cba['Marine Eutrophication'], bottom= (Footprint_tables_D_cba['Land Occupation Average']+Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core']+Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core']+Footprint_tables_D_cba['Freshwater Eutrophication']), width = 0.8 )
+
+# remove spines
+ax1.spines['right'].set_visible(False)
+ax1.spines['top'].set_visible(False)
+# x y details #
+ax1.set(ylim = [0,.13]  )
+ax1.set_ylabel('PDF.yr of species', fontsize = 8)
+ax1.set_xticks(x)
+ax1.set_xticklabels(Footprint_tables_D_cba['Countries_full_name'], rotation = 90, fontsize = 8)
+ax1.set_xlim(-0.8, len(Footprint_tables_D_cba.index))
+#ax1.set_yticklabels(fontsize=8)
+# grid lines
+ax1.set_axisbelow(True)
+ax1.yaxis.grid(color='gray', linestyle='dashed', alpha=0.2)
+
+# title and legend
+ax1.set_title('Absolute Consumption Based Accounts', loc ='center', fontdict = {'fontsize' : 10})
+fig.suptitle('Global Biodiversity Footprints Due to Household Consumption',fontsize = 12)
+
+
+######################################################################################################################
+######################################################################################################################
+######################################################################################################################
+
+ax2.bar(x,Footprint_tables_D_pba['Land Occupation Average'], width = 0.8)
+ax2.bar(x,Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core'], bottom= Footprint_tables_D_pba['Land Occupation Average'], width = 0.8 )
+ax2.bar(x,Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core'], bottom= (Footprint_tables_D_pba['Land Occupation Average']+Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core']), width = 0.8)
+ax2.bar(x,Footprint_tables_D_pba['Freshwater Eutrophication'], bottom= (Footprint_tables_D_pba['Land Occupation Average']+Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core']+Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core']), width = 0.8 )
+ax2.bar(x,Footprint_tables_D_pba['Marine Eutrophication'], bottom= (Footprint_tables_D_pba['Land Occupation Average']+Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core']+Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core']+Footprint_tables_D_pba['Freshwater Eutrophication']), width = 0.8 )
+
+# remove spines
+ax2.spines['right'].set_visible(False)
+ax2.spines['top'].set_visible(False)
+# x y details
+#ax2.set_ylabel('PDF.yr of species', fontsize = 10)
+ax2.set_xticks(x)
+ax2.set_xticklabels(Footprint_tables_D_pba['Countries_full_name'], rotation = 90, fontsize = 8)
+
+ax2.set_xlim(-0.8, len(Footprint_tables_D_cba.index))
+# grid lines
+ax2.set_axisbelow(True)
+ax2.yaxis.grid(color='gray', linestyle='dashed', alpha=0.2)
+# title and legend
+ax2.set_title('Absolute Production Based Accounts', loc ='center', fontdict = {'fontsize' : 10})
+plt.legend(['Land Occ. average', 'Climate Change', 'Water Cons.', 'Freshwater Eutrophication', 'Marine Eutrophication'], loc='upper right', ncol = 1, fontsize = 'medium', title = 'Impact Pathway', title_fontsize = 'medium')
+
+plt.tight_layout()
+
+plt.show()
+###########################################################################################################
+
+fig1, (ax3, ax4) =plt.subplots( ncols=2, figsize = (15, 6),sharey='row')
+Footprint_tables_D_cba = Footprint_tables_D_cba.sort_values(['Total_Footprint_cap'], ascending = [False])
+
+ax3.bar(x,Footprint_tables_D_cba['Land Occupation Average_cap'], width = 0.8)
+ax3.bar(x,Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core_cap'], bottom= Footprint_tables_D_cba['Land Occupation Average_cap'], width = 0.8 )
+ax3.bar(x,Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'], bottom= (Footprint_tables_D_cba['Land Occupation Average_cap']+Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core_cap']), width = 0.8)
+ax3.bar(x,Footprint_tables_D_cba['Freshwater Eutrophication_cap'], bottom= (Footprint_tables_D_cba['Land Occupation Average_cap']+Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core_cap']+Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap']), width = 0.8 )
+ax3.bar(x,Footprint_tables_D_cba['Marine Eutrophication_cap'], bottom= (Footprint_tables_D_cba['Land Occupation Average_cap']+Footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core_cap']+Footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap']+Footprint_tables_D_cba['Freshwater Eutrophication_cap']), width = 0.8 )
+
+# remove spines
+ax3.spines['right'].set_visible(False)
+ax3.spines['top'].set_visible(False)
+# x y details
+ax3.set_ylabel('PDF.yr of species', fontsize =9)
+ax3.set_xticks(x)
+ax3.set_xticklabels(Footprint_tables_D_cba['Countries_full_name'],rotation = 90, fontsize = 8)
+ax3.set_xlim(-0.8, len(Footprint_tables_D_cba.index))
+
+
+# grid lines
+ax3.set_axisbelow(True)
+ax3.yaxis.grid(color='gray', linestyle='dashed', alpha=0.2)
+# title and legend
+ax3.set_title('Per Capita Consumption Based Accounts', loc ='center', fontdict = {'fontsize' : 10})
+fig1.suptitle('Global Per Capita Biodiversity Footprints Due to Household Consumption',fontsize = 12)
+
+#ax3.legend(['Land Occ. average', 'Climate Change', 'Water Cons.', 'Freshwater Eutrophication'], loc='upper center', ncol = 4)
+#ax3.tight_layout()
+#############################################################################################################################
+Footprint_tables_D_pba = Footprint_tables_D_pba.sort_values(['Total_Footprint_cap'], ascending = [False])
+
+ax4.bar(x,Footprint_tables_D_pba['Land Occupation Average_cap'], width = 0.8)
+ax4.bar(x,Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core_cap'], bottom= Footprint_tables_D_pba['Land Occupation Average_cap'], width = 0.8 )
+ax4.bar(x,Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'], bottom= (Footprint_tables_D_pba['Land Occupation Average_cap']+Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core_cap']), width = 0.8)
+ax4.bar(x,Footprint_tables_D_pba['Freshwater Eutrophication_cap'], bottom= (Footprint_tables_D_pba['Land Occupation Average_cap']+Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core_cap']+Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap']), width = 0.8 )
+ax4.bar(x,Footprint_tables_D_pba['Marine Eutrophication_cap'], bottom= (Footprint_tables_D_pba['Land Occupation Average_cap']+Footprint_tables_D_pba['Climate Change - Terrestrial ecosystems core_cap']+Footprint_tables_D_pba['Water Consumption - Terrestrial & Aquatic ecosystems core_cap']+Footprint_tables_D_pba['Freshwater Eutrophication_cap']), width = 0.8 )
+
+# remove spines
+ax4.spines['right'].set_visible(False)
+
+ax4.spines['top'].set_visible(False)
+# x y details
+#ax4.set_ylabel('PDF.yr of species', fontsize = 10)
+ax4.set_xticks(x)
+ax4.set_xticklabels(Footprint_tables_D_pba['Countries_full_name'], rotation = 90, fontsize = 8)
+ax4.set_xlim(-0.8, len(Footprint_tables_D_cba.index))
+# grid lines
+ax4.set_axisbelow(True)
+ax4.yaxis.grid(color='gray', linestyle='dashed', alpha=0.2)
+# title and legend
+ax4.set_title('Per Capita Production Based Accounts', loc ='center', fontdict = {'fontsize' : 10})
+plt.tight_layout()
+plt.legend(['Land Occ. average', 'Climate Change', 'Water Cons.', 'Freshwater Eutrophication','Marine Eutrophication'], loc='upper right', ncol = 1, fontsize = 'medium', title = 'Impact Pathway', title_fontsize = 'medium')
+
+
+plt.show()
+
+###############################################################################################################################################################################################################################
+
+fig3, (ax5, ax6) =plt.subplots( ncols=2, figsize = (15, 6),sharey='row')
+Footprint_tables_D_exp = Footprint_tables_D_exp.sort_values(['Total_Footprint'], ascending = [False])
+Footprint_tables_D_imp = Footprint_tables_D_imp.sort_values(['Total_Footprint'], ascending = [False])
+
+
+ax5.bar(x,Footprint_tables_D_imp['Land Occupation Average'], width = 0.8)
+ax5.bar(x,Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core'], bottom= Footprint_tables_D_imp['Land Occupation Average'], width = 0.8 )
+ax5.bar(x,Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core'], bottom= (Footprint_tables_D_imp['Land Occupation Average']+Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core']), width = 0.8)
+ax5.bar(x,Footprint_tables_D_imp['Freshwater Eutrophication'], bottom= (Footprint_tables_D_imp['Land Occupation Average']+Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core']+Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core']), width = 0.8 )
+ax5.bar(x,Footprint_tables_D_imp['Marine Eutrophication'], bottom= (Footprint_tables_D_imp['Land Occupation Average']+Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core']+Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core']+ Footprint_tables_D_imp['Freshwater Eutrophication']), width = 0.8 )
+
+# remove spines
+ax5.spines['right'].set_visible(False)
+ax5.spines['top'].set_visible(False)
+# x y details
+ax5.set_ylabel('PDF.yr of species', fontsize =8)
+ax5.set_xticks(x)
+ax5.set_xticklabels(Footprint_tables_D_imp['Countries_full_name'],rotation = 90, fontsize = 8)
+ax5.set_xlim(-0.8, len(Footprint_tables_D_imp.index))
+
+
+# grid lines
+ax5.set_axisbelow(True)
+ax5.yaxis.grid(color='gray', linestyle='dashed', alpha=0.2)
+# title and legend
+ax5.set_title('Imported Biodiversity Footprints', loc ='center', fontdict = {'fontsize' : 10})
+fig3.suptitle('Imported/Exported Biodiversity Footprints Due to Household Consumption (Absolute)',fontsize = 12)
+
+#############################################################################################################################
+
+ax6.bar(x,Footprint_tables_D_exp['Land Occupation Average'], width = 0.8)
+ax6.bar(x,Footprint_tables_D_exp['Climate Change - Terrestrial ecosystems core'], bottom= Footprint_tables_D_exp['Land Occupation Average'], width = 0.8 )
+ax6.bar(x,Footprint_tables_D_exp['Water Consumption - Terrestrial & Aquatic ecosystems core'], bottom= (Footprint_tables_D_exp['Land Occupation Average']+Footprint_tables_D_exp['Climate Change - Terrestrial ecosystems core']), width = 0.8)
+ax6.bar(x,Footprint_tables_D_exp['Freshwater Eutrophication'], bottom= (Footprint_tables_D_exp['Land Occupation Average']+Footprint_tables_D_exp['Climate Change - Terrestrial ecosystems core']+Footprint_tables_D_exp['Water Consumption - Terrestrial & Aquatic ecosystems core']), width = 0.8 )
+ax6.bar(x,Footprint_tables_D_exp['Marine Eutrophication'], bottom= (Footprint_tables_D_exp['Land Occupation Average']+Footprint_tables_D_exp['Climate Change - Terrestrial ecosystems core']+Footprint_tables_D_exp['Water Consumption - Terrestrial & Aquatic ecosystems core']+Footprint_tables_D_exp['Freshwater Eutrophication']), width = 0.8 )
+
+# remove spines
+ax6.spines['right'].set_visible(False)
+
+ax6.spines['top'].set_visible(False)
+# x y details
+#ax4.set_ylabel('PDF.yr of species', fontsize = 10)
+ax6.set_xticks(x)
+ax6.set_xticklabels(Footprint_tables_D_exp['Countries_full_name'], rotation = 90, fontsize = 8)
+ax6.set_xlim(-0.8, len(Footprint_tables_D_exp.index))
+# grid lines
+ax6.set_axisbelow(True)
+ax6.yaxis.grid(color='gray', linestyle='dashed', alpha=0.2)
+# title and legend
+ax6.set_title('Exported Biodiversity Footprints', loc ='center', fontdict = {'fontsize' : 10})
+plt.tight_layout()
+plt.legend(['Land Occ. average', 'Climate Change', 'Water Cons.', 'Freshwater Eutrophication','Marine Eutrophication'], loc='upper right', ncol = 1, fontsize = 'medium', title = 'Impact Pathway', title_fontsize = 'medium')
+
+
+plt.show()
+
+fig4, (ax7) =plt.subplots(figsize = (15, 6))
+Footprint_tables_D_imp = Footprint_tables_D_imp.sort_values(['Total_Footprint_cap'], ascending = [False])
+
+
+ax7.bar(x,Footprint_tables_D_imp['Land Occupation Average_cap'], width = 0.8)
+ax7.bar(x,Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core_cap'], bottom= Footprint_tables_D_imp['Land Occupation Average_cap'], width = 0.8 )
+ax7.bar(x,Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core_cap'], bottom= (Footprint_tables_D_imp['Land Occupation Average_cap']+Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core_cap']), width = 0.8)
+ax7.bar(x,Footprint_tables_D_imp['Freshwater Eutrophication_cap'], bottom= (Footprint_tables_D_imp['Land Occupation Average_cap']+Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core_cap']+Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core_cap']), width = 0.8 )
+ax7.bar(x,Footprint_tables_D_imp['Marine Eutrophication_cap'], bottom= (Footprint_tables_D_imp['Land Occupation Average_cap']+Footprint_tables_D_imp['Climate Change - Terrestrial ecosystems core_cap']+Footprint_tables_D_imp['Water Consumption - Terrestrial & Aquatic ecosystems core_cap']+Footprint_tables_D_imp['Freshwater Eutrophication_cap']), width = 0.8 )
+
+ax7.spines['right'].set_visible(False)
+ax7.spines['top'].set_visible(False)
+# x y details
+ax7.set_ylabel('PDF.yr of species', fontsize =10)
+ax7.set_xticks(x)
+ax7.set_xticklabels(Footprint_tables_D_imp['Countries_full_name'],rotation = 90, fontsize = 10)
+ax7.set_xlim(-0.8, len(Footprint_tables_D_imp.index))
+
+
+# grid lines
+ax7.set_axisbelow(True)
+ax7.yaxis.grid(color='gray', linestyle='dashed', alpha=0.2)
+#ax1.set(ylim = [0,.00000001]  )
+
+# title and legend
+ax7.set_title('Per Capita Imported Biodiversity Footprints', loc ='center', fontdict = {'fontsize' : 12})
+plt.tight_layout()
+plt.legend(['Land Occ. average', 'Climate Change', 'Water Cons.', 'Freshwater Eutrophication','Marine Eutrophication'], loc='upper right', ncol = 1, fontsize = 'medium', title = 'Impact Pathway', title_fontsize = 'medium')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
