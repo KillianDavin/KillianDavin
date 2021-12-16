@@ -1,0 +1,135 @@
+import pymrio
+import pandas as pd
+import numpy as np
+################################################################################################################################################################
+
+''' This file is for the calculation of source tables when analysing the origins of stressor impacts.
+Individual stressors must be diagonalized to form square 9800 x 9800 S tables, and footprints are recalculated individually
+in terms of the stressor being analysed. This file gives an example of the operations completed for the diagonolisation of
+one stressor and the calculation of the footprints thereafter. This file must be executed 6 times for example, if looking
+to find the total source impacts due to land use (6 impact categories that need to be diagonalized individually).
+Each stressor footprint is calculated individual and added together at the end to form 9800 x 9800 Footprint tables in terms
+of land use etc....
+
+This example is for the analysis of the extensive forestry land stressor'''
+
+
+################################################################################################################################################################
+
+'''First section reads in tables, and readjusts the index and columns as they become unattached when reading between csv and pandas'''
+
+##############################################################################################################################################
+CF_tables = pd.read_csv('C:/Users/Cillian/OneDrive/Documents/NTNU project documents/CF sheets/CSV CF files/Full_CF_table_median_approach.csv')
+index_labels = list(CF_tables.iloc[0:,0])
+stressor_index_label = list(CF_tables.iloc[0:,1])
+unit_labels_index = list(CF_tables.iloc[0:,2])
+CF_tables = pd.DataFrame(CF_tables.iloc[0:,3:])
+column_labels = CF_tables.columns.to_list()
+CF_tables =CF_tables.values.astype(float)
+CF_tables = pd.DataFrame(CF_tables,index=[stressor_index_label],columns= column_labels)
+
+CF_tables.iloc[0:6,:] = CF_tables.iloc[0:6,:]*(10**6)  #coversion from m2 to km2 for land Characterisations
+CF_tables.iloc[22:24, :] = CF_tables.iloc[22:24,:]*(10**6) #coversion from m3 to Mm3 for Water consumption as per exiobase
+print(CF_tables)
+
+
+###########################################################################################################################################################################################
+
+#############################################################################################################################################################################################################################
+
+'''Load tables from original exiobase files with readjusted tables from Step 1 file'''
+
+######################################################################################################################################################################################################
+
+exiobase3 = pymrio.load_all('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/Exiobase3 folder/Exiobase3 coefficent tables - latest')  #load latest tables
+S = pd.DataFrame(exiobase3.satellite.S)
+Y = pd.DataFrame(exiobase3.Y)
+print(exiobase3.x)
+
+#############################################################################################################################################################################################################################
+
+'''Segregating required stressors from S tables'''
+'''Note I repeat the calculation of the characterized tables of S
+ in terms of the LC-IMPACT CF factors here. It is the exact same fashion as step 2 in file 2. '''
+
+#############################################################################################################################################################################################################################
+
+land_stressors = pd.DataFrame(S.iloc[[446,447,448,449,450,451,452,453,454,455,456,457,458,459, 461,462,463,464,465],:])  #Seperation of land use categories using indexing. Rows obtained from csv file
+water_stressors = pd.DataFrame(S.iloc[923:1026])  #Blue water consumption stressor rows
+climate_change_stressors = pd.DataFrame(S.iloc[[23,24,25,67,68,69,70,71,72,73,74,92,93,426,427,429,435,437,438]]) #Global warming stressor rows
+eutrophication_stressors = pd.DataFrame(S.iloc[[432,433,434,440,443]]) #Marine and Fresh eutrophication
+
+#Aggregation of exiobase land use categories to LC-IMPACT categories
+
+Annual_crop_df = pd.DataFrame(land_stressors.iloc[[0,1,2,3,4,5,6,7,8,9,10,12],:]).sum(0) #Aggregation of the annual crop categories in exiobase to the singular LC-IMPACT category for Land Use
+print(Annual_crop_df)
+Annual_crop_df = pd.DataFrame(Annual_crop_df).T #As python outputs a column vector for a sumation operation, the transpose function T is used to return the annual crop dataframe to it's original Dataframe index/column set up with countries and products as the column index and stressor as the row index.
+Permanent_crop_df = pd.DataFrame(land_stressors.iloc[[11],:]).sum(0)  #Aggregation of permanent crop categories to LC-Impact land category
+Permanent_crop_df = pd.DataFrame(Permanent_crop_df).T   #Transposing to original Dataframe layout.
+Pasture_crop_df = pd.DataFrame(land_stressors.iloc[[14,15,16],:]).sum(0) #Aggregation of Pasture crop land use categories
+print(Annual_crop_df)
+Pasture_crop_df = pd.DataFrame(Pasture_crop_df).T
+Urban_df = pd.DataFrame(land_stressors.iloc[[17],:]).sum(0) #Aggregation of Urban land use categories
+Urban_df = pd.DataFrame(Urban_df).T
+Intensive_forestry_df = pd.DataFrame(land_stressors.iloc[[13],:]).sum(0) #Aggregation of Intensive forestry land use stresors to LC-Impact category
+Intensive_forestry_df = pd.DataFrame(Intensive_forestry_df).T
+Extensive_forestry_df = pd.DataFrame(land_stressors.iloc[[18],:]).sum(0) #Aggregation of Intensive forestry land use stresors to LC-Impact
+Extensive_forestry_df = pd.DataFrame(Extensive_forestry_df).T
+
+#Re-creating a combined dataframe for the aggregated land use stressors
+
+Land_aggregated_df = Extensive_forestry_df
+exiobase3.satellite.S = Land_aggregated_df  #Full_stressor_list = All required stressors (aggregated and disaggregated) for footprint calculations
+#for i in stressor_list :
+#    exiobase3.satellite.S = exiobase3.satellite.S.append(i)
+
+S = pd.DataFrame(exiobase3.satellite.S)
+
+#############################################################################################################################################################################################################################
+
+'''Here I diagonolize the stressor, in this case Extensive_forestry,
+ but could be any of the 153 stressors used in the project. Then the new S table of shape 9800 x 9800
+ in terms of the Extensive forestry stressor only, is characterised by the LC-IMPACT CF table for Extensive Forestry.
+ '''
+
+#############################################################################################################################################################################################################################
+
+
+S = pd.DataFrame(
+            index=exiobase3.L.columns,
+            columns=exiobase3.L.columns,
+            data=np.diag(S.iloc[0, :]))
+print(S)
+
+#every 200 rows are a different country in the 9800x9800 matrix
+# The country of origin of the stressor requires multiplication of such rows with the country LC-IMPACT CF of that country
+#hence the set up of the nested for loops as such
+lower_range = 0
+upper_range = 200
+for CF_column_index in range(0,49):
+    if upper_range <= 9800:
+        for stressor_index in range(lower_range,upper_range):
+            S.iloc[stressor_index,:] = S.iloc[stressor_index,:]*CF_tables.iat[0,CF_column_index]
+        lower_range += 200
+        upper_range += 200
+
+#############################################################################################################################################################################################################################
+
+''' This section calculates the biodiversity footprint tables, 9800 x 9800, for the chosen strssor
+We require D_imp only as the project is analysing impacts embodied in imports '''
+#############################################################################################################################################################################################################################
+new_accounts = pymrio.calc_accounts(S, exiobase3.L, exiobase3.Y, nr_sectors=200)
+exiobase3.satellite.D_cba = pd.DataFrame(new_accounts[0])
+print(exiobase3.satellite.D_cba.shape)
+print(exiobase3.satellite.D_cba.shape)
+exiobase3.satellite.D_pba = new_accounts[1]
+print(exiobase3.satellite.D_pba.shape)
+
+exiobase3.satellite.D_imp = pd.DataFrame(new_accounts[2] )
+
+print(exiobase3.satellite.D_imp.shape)
+
+exiobase3.satellite.D_exp = new_accounts[3]
+print(exiobase3.satellite.D_exp.shape)
+
+exiobase3.satellite.D_imp.to_csv('Extensive forestry.csv')
