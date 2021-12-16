@@ -1,0 +1,124 @@
+import numpy as np
+import plotly
+import plotly.io as pio
+import pymrio
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+import seaborn as sn
+import plotly_express as px
+Median_approach_df = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_cba_total.csv', dtype= object)
+Average_approach_df = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_cba_total_average.csv',dtype=object)
+Precautionary_approach = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_cba_total_precautionary.csv',dtype=object)
+Best_case_approach_df = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_cba_total_bestcase.csv',dtype=object)
+
+index = Median_approach_df.iloc[:,0].values
+
+Land_occupation_label = ['Land Occupation Average']*6
+Climate_change_label = ['Climate Change - Terrestrial ecosystems core']*19
+Water_consumption_label = ['Water Consumption - Terrestrial & Aquatic ecosystems core']*103
+Freshwater_consumption_label = ['Freshwater Eutrophication']*4
+Marine_eutrophication_label = ['Marine Eutrophication']
+Precautionary_approach_label = ['High. CF']
+Median_approach_label = ['Med. CF']
+Average_approach_label = ['Avr. CF']
+Best_case_approach_label = ['Low. CF']
+scenario_approach_labels = (Median_approach_label,Average_approach_label,Precautionary_approach_label,Best_case_approach_label)
+new_index_label = ['L.Occ','C.Chg.','W.Con','F.Eut','M.Eut.']
+column_list = Median_approach_df.columns.to_list()
+column_list = column_list[1:]
+index_labels = Land_occupation_label + Climate_change_label + Water_consumption_label + Freshwater_consumption_label + Marine_eutrophication_label
+listoftables = (Median_approach_df,Average_approach_df,Precautionary_approach,Best_case_approach_df)
+Heat_map_table = pd.DataFrame()
+i = 0
+for df in listoftables:
+
+    df = pd.DataFrame(df.iloc[:,1:].values,index = [index_labels,index], columns=column_list)
+    df = df.astype(float)
+    df = pd.DataFrame(df).groupby(axis=0, level=0, sort=False).sum()
+    df = pd.DataFrame(df.values, index = [scenario_approach_labels[i]*5,new_index_label],columns=column_list)
+    Heat_map_table = Heat_map_table.append(df)
+    i += 1
+
+Heat_map_table = Heat_map_table.astype(float)
+Heat_map_table.sort_index(axis=0, level=1, inplace=True)
+#Heat_map_table['Total Biodiversity impact (PDF)'] = Heat_map_table.sum(1)
+print(Heat_map_table)
+Heat_map_table.to_csv('Heat_map.csv')
+Heat_map_table_2 = Heat_map_table
+
+print(Heat_map_table.shape)
+sn.set(font_scale = 1)
+fig, ax = plt.subplots(figsize = (14,9))
+sn.heatmap(Heat_map_table,cmap ='viridis', vmin= 0.002, vmax=.02,
+           linewidth=0.3, cbar_kws={'label': 'PDF.yr'})
+title = 'Impacts of CF factor selection for 4 ROW regions on consumption based footprints of all countries/regions'
+plt.title(title, loc= 'left',fontdict= {'fontsize':14})
+plt.ylabel('Characterisation Factor selection approach', fontdict= {'fontsize':12})
+plt.xlabel('Consumption footprint per impact pathway per region (PDF of species)',  fontdict= {'fontsize':12})
+plt.tight_layout
+
+plt.show()
+'''
+print(column_list)
+for country in column_list:
+    Heat_map_table[country] = np.log10(Heat_map_table[country])
+Heat_map_table = Heat_map_table.astype(float)
+Heat_map_table.sort_index(axis=0, level=1, inplace=True)
+print(Heat_map_table)
+
+sn.set(font_scale = 0.8)
+fig1, ax2 = plt.subplots(figsize = (15,10))
+sn.set(font_scale = 1.2)
+htmp = sn.heatmap(Heat_map_table,cmap ='viridis',vmin= -5, vmax= -.8,
+           linewidth=0.3, cbar_kws={"shrink": 1, 'label': 'PDF.yr (log10)'})
+title = 'Impacts of CF factor selection for 4 ROW regions on consumption based footprints \n of all countries/regions'
+htmp.figure.axes[-1].yaxis.label.set_size(12)
+plt.title(title, loc= 'left',  fontdict= {'fontsize':16})
+plt.ylabel('Characterisation Factor selection approach', fontdict= {'fontsize':14})
+plt.xlabel('Consumption footprint per impact pathway per region (PDF of species)', fontdict= {'fontsize':14})
+
+htmp.set_xticklabels(htmp.get_xmajorticklabels(), fontsize = 14)
+htmp.set_yticklabels(htmp.get_ymajorticklabels(), fontsize = 14)
+plt.tight_layout
+
+plt.show()
+'''
+Heat_map_table_2.sort_index(axis=0, level=1, inplace=True)
+Heat_map_table_2 = Heat_map_table_2.iloc[[8,9,10,11,16,17,18,19],:]
+Heat_map_table_2 = Heat_map_table_2.T
+print(Heat_map_table_2)
+Heat_map_table_2['Avr. CF','L.Occ'] = (Heat_map_table_2['Avr. CF','L.Occ'] - Heat_map_table_2['Med. CF','L.Occ'])*100/Heat_map_table_2['Med. CF','L.Occ']
+Heat_map_table_2['High. CF','L.Occ'] = (Heat_map_table_2['High. CF','L.Occ'] - Heat_map_table_2['Med. CF','L.Occ'])*100/Heat_map_table_2['Med. CF','L.Occ']
+Heat_map_table_2['Low. CF','L.Occ'] = (Heat_map_table_2['Low. CF','L.Occ'] - Heat_map_table_2['Med. CF','L.Occ'])*100/Heat_map_table_2['Med. CF','L.Occ']
+Heat_map_table_2['Avr. CF','W.Con'] = (Heat_map_table_2['Avr. CF','W.Con'] - Heat_map_table_2['Med. CF','W.Con'])*100/Heat_map_table_2['Med. CF','W.Con']
+Heat_map_table_2['High. CF','W.Con'] = (Heat_map_table_2['High. CF','W.Con'] - Heat_map_table_2['Med. CF','W.Con'])*100/Heat_map_table_2['Med. CF','W.Con']
+Heat_map_table_2['Low. CF','W.Con'] = (Heat_map_table_2['Low. CF','W.Con'] - Heat_map_table_2['Med. CF','W.Con'])*100/Heat_map_table_2['Med. CF','W.Con']
+Heat_map_table_2 = Heat_map_table_2.T
+Heat_map_table_2 = Heat_map_table_2.iloc[[0,1,2,4,5,6],:]
+
+print(Heat_map_table_2)
+
+fig2, ax3 = plt.subplots(figsize = (12,7))
+
+#plt.rcParams["axes.labelsize"] = 7
+rdgn = sn.diverging_palette(h_neg=130, h_pos=10, s=99, l=55, sep=3, as_cmap=True)
+res = sn.heatmap(Heat_map_table_2,
+           linewidth=0.3, cbar_kws={"shrink": 1, 'label': '% relative change'}, cmap = rdgn, vmin = -200,center =0.00, vmax = 800)
+#sn.color_palette("vlag", as_cmap=True)
+res.figure.axes[-1].yaxis.label.set_size(16)
+title = 'Impacts of CF factor selection for 4 ROW regions on consumption based footprints of all\ncountries/regions relative to median CF footprints'
+plt.title(title, loc= 'left', fontdict= {'fontsize':16})
+plt.ylabel('Characterisation Factor selection approach', fontdict= {'fontsize':14})
+plt.xlabel('Country/Region', fontdict= {'fontsize':14})
+sn.set(font_scale = 1.4)
+res.set_xticklabels(res.get_xmajorticklabels(), fontsize = 14)
+res.set_yticklabels(res.get_ymajorticklabels(), fontsize = 14)
+cbar = res.collections[0].colorbar
+cbar.ax.tick_params(labelsize=14)
+#ax3.set_xticklabels(column_list,Fontsize = 7)
+#ax3.set_yticklabels(Heat_map_table_2.index.to_list(), Fontsize = 7)
+plt.tight_layout
+
+plt.show()
