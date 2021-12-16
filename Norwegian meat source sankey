@@ -1,0 +1,279 @@
+import pymrio
+import matplotlib
+import pandas as pd
+import numpy as np
+from plotly import __version__
+import plotly.graph_objs as go
+import plotly.io as pio
+import plotly.graph_objects as go # Import the graphical object
+from webcolors import hex_to_rgb
+import matplotlib.pyplot as plt
+import seaborn as sns
+import adjustText
+'''
+################################################################################################################################################################
+
+First section reads in tables, and readjusts the index and columns as they become unattached when reading between csv and pandas'''
+'''''''''
+##############################################################################################################################################
+Biodiversity_footprint_tables_D_cba  = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_imp_biod.csv')
+
+Biodiversity_footprint_tables_D_cba = pd.DataFrame(Biodiversity_footprint_tables_D_cba)
+print(Biodiversity_footprint_tables_D_cba.columns.get_loc('NO'))
+index1 = Biodiversity_footprint_tables_D_cba.iloc[1:,0].values
+Land_occupation_label = ['Land Occupation Average']*6
+Climate_change_label = ['Climate Change - Terrestrial ecosystems core']*19
+Water_consumption_label = ['Water Consumption - Terrestrial & Aquatic ecosystems core']*103
+Freshwater_consumption_label = ['Freshwater Eutrophication']*4
+Marine_consumption_label = ['Marine Eutrophication']
+index2 = Land_occupation_label + Climate_change_label + Water_consumption_label + Freshwater_consumption_label + Marine_consumption_label
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.iloc[:,8201:8401]
+
+column_index1 = ['NO']*200
+column_index2 = Biodiversity_footprint_tables_D_cba.iloc[0,:].values
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.iloc[1:,:]
+
+Biodiversity_footprint_tables_D_cba = pd.DataFrame(Biodiversity_footprint_tables_D_cba.values, index = [index2,index1], columns= [column_index1,column_index2])
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.astype(float )
+Land_footprint_tables = pd.DataFrame(Biodiversity_footprint_tables_D_cba.iloc[0:6,:]).T
+Land_footprint_tables= Land_footprint_tables.droplevel(axis=0, level=0)
+Land_footprint_tables= Land_footprint_tables.droplevel(axis=1, level=0)
+Land_footprint_tables['Total_Footprint'] = Land_footprint_tables['Annual crops']+Land_footprint_tables['Permanent Crops']+Land_footprint_tables['Pasture']+Land_footprint_tables['Urban'] + Land_footprint_tables['Extensive forestry'] + Land_footprint_tables['Intensive forestry']
+Land_footprint_tables = Land_footprint_tables.sort_values(['Total_Footprint'], ascending = [False])
+Land_footprint_tables = Land_footprint_tables.head(30)
+Land_footprint_tables = Land_footprint_tables.sort_values(['Total_Footprint'], ascending = [True])
+print(Land_footprint_tables)
+print(Biodiversity_footprint_tables_D_cba)
+Biodiversity_footprint_tables_D_cba = pd.DataFrame(Biodiversity_footprint_tables_D_cba.groupby(axis=0,level =0, sort= False).sum()).T
+print(Biodiversity_footprint_tables_D_cba)
+Biodiversity_footprint_tables_D_cba['Total_Footprint'] = (Biodiversity_footprint_tables_D_cba['Land Occupation Average'] + Biodiversity_footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core'] + Biodiversity_footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core'] + Biodiversity_footprint_tables_D_cba['Freshwater Eutrophication'])        #Categories consider different taxanomic species, therefore an average approach is used to quantify impact
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.sort_values(['Total_Footprint'], ascending = [False])
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.head(10)
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.sort_values(['Total_Footprint'], ascending = [True])
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.droplevel(axis=0, level=0)
+print(Land_footprint_tables.index.tolist())
+as_list = Land_footprint_tables.index.tolist()
+print(as_list)
+idx1 = as_list.index('Sale, maintenance, repair of motor vehicles, motor vehicles parts, motorcycles, motor cycles parts and accessoiries')
+idx2 = as_list.index('Supporting and auxiliary transport services; travel agency services (63)')
+as_list[idx1] = 'Sale and maintenance of motor vehicles'
+as_list[idx2] = 'Auxillary transport and travel services'
+print(as_list)
+Land_footprint_tables['index'] = as_list
+Land_footprint_tables.set_index('index', inplace= True )
+Land_footprint_tables = Land_footprint_tables.sort_values(['Total_Footprint'], ascending = [False])
+Land_footprint_tables = Land_footprint_tables.head(11)
+print(Land_footprint_tables)
+Land_footprint_tables = Land_footprint_tables.drop(axis=0, labels= 'Real estate services (70)')
+
+print(Land_footprint_tables)
+
+
+
+###########################################################################################################################################################################################
+
+#############################################################################################################################################################################################################################
+
+Y = pd.read_csv('Y_diag.csv', dtype='object')
+Y = pd.DataFrame(Y)
+print(Y)
+label_1 = Y.iloc[1:,0]
+label_2 = Y.iloc[1:,1]
+Y = pd.DataFrame(Y.iloc[1:,2:])
+Y = Y.astype(float)
+Y = pd.DataFrame(Y.values,index = [label_1,label_2], columns = [label_1,label_2])
+print(Y)
+
+idx = pd.IndexSlice
+Y = pd.DataFrame(Y.loc[idx[:,['Products of meat cattle','Food products nec','Hotel and restaurant services (55)','Vegetables, fruit, nuts','Fish products','Crops nec','Beverages','Wearing apparel; furs (18)','Textiles (17)','Motor vehicles, trailers and semi-trailers (34)']],:])
+Y = pd.DataFrame(Y.loc[:,idx[:,['Products of meat cattle','Food products nec','Hotel and restaurant services (55)','Vegetables, fruit, nuts','Fish products','Crops nec','Beverages','Wearing apparel; furs (18)','Textiles (17)','Motor vehicles, trailers and semi-trailers (34)']]])
+Y = pd.DataFrame(Y.loc[:,idx['NO',:]])
+
+print(Y)
+print(Y.shape)
+Y = Y.groupby(axis=0, level=1).sum()
+Y = pd.DataFrame(Y)
+Y = Y.sum(0)
+print(Y)
+print(Y.shape)
+Y = pd.DataFrame(Y)
+Y = (Y/4953088)*(10**6)
+Land_footprint_tables['Total_Expenditure'] = Y.values
+Land_footprint_tables['Impact_Intensity'] = Land_footprint_tables['Total_Footprint'] / Land_footprint_tables['Total_Expenditure']
+Land_footprint_tables['Impact_Intensity'] = Land_footprint_tables['Impact_Intensity']/10**6
+print(Land_footprint_tables['Impact_Intensity'])
+Land_footprint_tables['Product_Categories'] = list(Land_footprint_tables.index.values)
+print(Land_footprint_tables)
+######################################################################################################################################################################################################
+# Control figure size for this notebook:
+#plt.rcParams['figure.figsize'] = [12, 8]
+plt.figure(figsize=(13,7))
+# data
+data = Land_footprint_tables
+sns.set_style("darkgrid")
+# use the scatterplot function to build the bubble map
+ax = sns.scatterplot(data=data, x='Total_Footprint', y='Total_Expenditure', size= 'Impact_Intensity', hue = 'Product_Categories' ,legend='brief', sizes=(50, 5000), palette="Set2", edgecolors="black")
+# Locate the legend outside of the plot
+# EXTRACT CURRENT HANDLES AND LABELS
+h,l = ax.get_legend_handles_labels()
+l[-5] = 'Impact Intensity (10^-14 PDF.yr/eur)'
+# COLOR LEGEND (FIRST 30 ITEMS)
+#col_lgd = plt.legend(h[1:10], l[1:10], loc='upper left',
+                    # bbox_to_anchor=(-0.05, -0.5), fancybox=True, shadow=True, ncol=5)
+size_lgd = plt.legend(h[-5:], l[-5:], loc='lower center', borderpad=1, prop={'size': 12},
+                      bbox_to_anchor=(0.5,-0.3), fancybox=True, shadow=False, ncol=5, handletextpad = 2)
+
+
+
+# SIZE LEGEND (LAST 5 ITEMS)
+
+#plt.gca().add_artist(col_lgd)
+
+plt.xlabel("Land Impacts (PDF.yr)", fontdict= {'size':12})
+plt.ylabel("Household expenditure per Capita (€)", fontdict= {'size':12})
+plt.title("Per Capita Expenditure vs Land Related Biodiversity impacts of Imported Products for Norwegian Household Consumption", fontdict={'size':14})
+for tick in ax.xaxis.get_major_ticks():
+    tick.label.set_fontsize(11)
+
+for tick in ax.yaxis.get_major_ticks():
+    tick.label.set_fontsize(11)
+
+texts = []
+for i in range(0,10):
+ #ax.text(x=data.Household_Consumption_expenditure_cap[i] +0.0002,y=data.Imported_Footprint_share[i]+0.002,s=Biodiversity_footprint_tables_D_cba.iloc[i,7], fontsize = 8, color = 'black')
+ texts.append( ax.text(x=data.Total_Footprint[i]+0.00000015 ,y=data.Total_Expenditure[i]-0.00000015,s=Land_footprint_tables.iloc[i,9], fontsize = 9, color = 'black'))
+# show the graph
+adjustText.adjust_text(texts)
+plt.show()
+########################################################################################################################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+############################################################################################################################
+'''
+#Annual_crops_df = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/Exiobase3 folder/Source footprint tables/Annual crops dataframe.csv')
+#Permanent_crops_df = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/Exiobase3 folder/Source footprint tables/Permanent crops dataframe.csv')
+#Pasture_crops_df = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/Exiobase3 folder/Source footprint tables/Pasture crops dataframe.csv')
+Total_land_footprint_df = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/Exiobase3 folder/Source footprint tables/Total_land_stressor_source.csv',dtype= object,keep_default_na=False, na_values='')
+#print(Total_land_footprint_df)
+index = list(Total_land_footprint_df.iloc[2:,0].values)
+#print(index)
+columns2 = list(Total_land_footprint_df.iloc[0,2:].values)
+#print(columns2)
+Total_land_footprint_df = pd.DataFrame(Total_land_footprint_df.iloc[2:,2:])
+#print(Total_land_footprint_df)
+
+Total_land_footprint_df = Total_land_footprint_df .astype(float)
+columns1 = Total_land_footprint_df .columns.to_list()
+
+Total_land_footprint_df  = pd.DataFrame(Total_land_footprint_df .values, index=[index,columns2], columns = [index,columns2])
+#print(Total_land_footprint_df )
+idx = pd.IndexSlice             #Slicing of multi index columns for seperating out multiindex columns
+Total_land_footprint_df = pd.DataFrame(Total_land_footprint_df.loc[:,idx['NO',:]])
+print(Total_land_footprint_df)
+Total_land_footprint_df = pd.DataFrame(Total_land_footprint_df.loc[:,idx[:,'Products of meat cattle']])  #Seggregating f
+Total_land_footprint_df = pd.DataFrame(Total_land_footprint_df).groupby(axis = 0, level =0, sort=False).sum()
+#Total_land_footprint_df = Total_land_footprint_df.iloc[:,[3,7,42,50,51,52,54,55,122,155]]
+Total_land_footprint_df = pd.DataFrame(Total_land_footprint_df)
+print(Total_land_footprint_df)
+
+
+products = list(Total_land_footprint_df.columns.get_level_values(1))
+print(products)
+
+Total_land_footprint_df['Total exported impacts'] = Total_land_footprint_df.sum(1)
+Total_land_footprint_df.sort_values('Total exported impacts', ascending = False, inplace= True)
+print(Total_land_footprint_df.iloc[0:11,:])
+Total_land_footprint_df = pd.DataFrame(Total_land_footprint_df)
+#Total_land_footprint_df = Total_land_footprint_df.drop(axis=0, labels= 'Real estate services (70)')
+print(Total_land_footprint_df)
+
+Total_land_footprint_df.to_csv('Norweigan_products_sources.csv')
+
+
+Total_land_footprint_df.sort_values('Total exported impacts', ascending = False, inplace= True)
+print(Total_land_footprint_df)
+
+top_list = ['ROW America', 'South Africa','ROW Asia','Brazil','Germany', 'ROW Africa','Australia', 'Indonesia', 'United States','1.69e-05 PDF.yr','1.42e-05 PDF.yr','3.81e-06 PDF.yr','2.54e-07 PDF.yr','2.68e-08 PDF.yr','2.03e-08 PDF.yr','1.50e-08 PDF.yr','1.45e-08 PDF.yr','8.74e-09 PDF.yr']
+country_origin_list = ['ROW America', 'South Africa','ROW Asia','Brazil','Germany', 'ROW Africa','Australia', 'Indonesia', 'United States']
+product_list = ['1.69e-05 PDF.yr','1.42e-05 PDF.yr','3.81e-06 PDF.yr','2.54e-07 PDF.yr','2.68e-08 PDF.yr','2.03e-08 PDF.yr','1.50e-08 PDF.yr','1.45e-08 PDF.yr','8.74e-09 PDF.yr']
+
+
+
+
+source_list = top_list
+print(source_list)
+print(source_list[1])
+new_list =['ROW America', 'South Africa','ROW Asia','Brazil','Germany', 'ROW Africa','Australia', 'Indonesia', 'United States']
+#for i in range(16,32):
+#    new_list += [source_list[i]]*10
+#print((len(new_list)))
+source = top_list
+
+second_new_list = ['1.69e-05 PDF.yr','1.42e-05 PDF.yr','3.81e-06 PDF.yr','2.54e-07 PDF.yr','2.68e-08 PDF.yr','2.03e-08 PDF.yr','1.50e-08 PDF.yr','1.45e-08 PDF.yr','8.74e-09 PDF.yr']
+second_new_list += products*9
+#country_origin_list = country_origin_list.extend(second_new_list)
+print(second_new_list)
+target = second_new_list
+Dataset = Total_land_footprint_df.iloc[0:9,1].values
+
+for i in range (0,9):
+    array_from_table = Total_land_footprint_df.iat[i,1]
+    Dataset = np.append(Dataset,array_from_table)
+print(Dataset)
+print(len(Dataset))
+node_label = top_list + products
+print(node_label)
+node_dict = {y:x for x,y in enumerate(node_label)}
+print(node_dict)
+source_node = [node_dict[x] for x in source]
+target_node = [node_dict[x] for x in target]
+print(source_node)
+print(target_node)
+
+color_node = ['#F94144',  '#F8961E','#43AA8B','#CD3278', '#90BE6D','#F9C74F' , '#577590', '#5E2612','#53868B','#F94144',  '#F8961E','#43AA8B','#CD3278', '#90BE6D','#F9C74F' , '#577590', '#5E2612','#53868B']
+color_node2 =  ['#FAEBD7']
+color_node = color_node + color_node2
+node_label_color = {x:y for x, y in zip(node_label, color_node)}
+link_color = [node_label_color[x] for x in source]
+link_color = ['rgba({},{},{}, 0.4)'.format(
+    hex_to_rgb(x)[0],
+    hex_to_rgb(x)[1],
+    hex_to_rgb(x)[2]) for x in link_color]
+
+
+
+fig = go.Figure(
+    data=[go.Sankey( # The plot we are interest
+        node = dict(
+            label = node_label, pad = 1000, thickness = 10, color = color_node
+        ),
+        # This part is for the link information
+        link = dict(
+            source = source_node,
+            target = target_node,
+            value = Dataset,
+            color = link_color
+        ), arrangement= 'perpendicular',textfont= dict(size = 11))])
+
+
+fig.update_layout(title_text= 'Import of Land Related Biodiversity Footprints of 10 High Impact Products Consumed By Norwegian Households',title_x=0.1, font=dict(size=10))
+fig.write_image( 'Sankey.png', width=900, height=600)
+pio.renderers.default = "png"
+# And shows the plot
+
+# And shows the plot
+fig.show()
