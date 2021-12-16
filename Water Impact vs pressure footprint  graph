@@ -1,0 +1,177 @@
+import adjustText
+import numpy as np
+import plotly
+import plotly.io as pio
+import pymrio
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly_express as px
+################################################################################################################################################################
+def add_identity(axes, *line_args, **line_kwargs):
+    identity, = axes.plot([], [], *line_args, **line_kwargs)
+    def callback(axes):
+        low_x, high_x = axes.get_xlim()
+        low_y, high_y = axes.get_ylim()
+        low = max(low_x, low_y)
+        high = min(high_x, high_y)
+        identity.set_data([low, high], [low, high])
+    callback(axes)
+    axes.callbacks.connect('xlim_changed', callback)
+    axes.callbacks.connect('ylim_changed', callback)
+    return axes
+
+################################################################################################################################################################
+#exiobase3 = pymrio.load_all('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/Exiobase3 folder/Exiobase3 coefficient tables (latest)')
+#exiobase3.Y = pd.DataFrame(exiobase3.Y).groupby(axis = 0, level=0, sort=False).sum()
+#print(exiobase3.Y)
+#exiobase3.Y = exiobase3.Y.sum()
+#exiobase3.Y = pd.DataFrame(exiobase3.Y.T)
+#exiobase3.Y.set_axis(['Total Household Consumption [Meur]'],axis = 1,inplace= True )
+#print(exiobase3.Y)
+
+Footprint_tables_D_cba  = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_cba_total.csv')
+Footprint_tables_D_pba = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_pba_total.csv')
+Footprint_tables_D_imp = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_imp_biod.csv')
+Footprint_tables_D_exp = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_exp_biod.csv')
+Pressure_Footprint_tables_D_cba = pd.read_csv('C:/Users/Cillian/OneDrive/Documents/NTNU project documents/CF sheets/CSV CF files/Water_Pressure_Footprints.csv')
+
+
+CF_tables  = pd.read_csv('C:/Users/Cillian/OneDrive/Documents/NTNU project documents/CF sheets/CSV CF files/Full_CF_table_median_approach.csv')
+print(Footprint_tables_D_cba.shape)
+print(Footprint_tables_D_pba.shape)
+print(Footprint_tables_D_imp.shape)
+print(Footprint_tables_D_exp.shape)
+print(Pressure_Footprint_tables_D_cba.shape)
+print(Pressure_Footprint_tables_D_cba)
+
+Land_occupation_label = ['Land Occupation Average']*6
+Climate_change_label = ['Climate Change - Terrestrial ecosystems core']*19
+Water_consumption_label = ['Water Consumption - Terrestrial & Aquatic ecosystems core']*103
+Freshwater_consumption_label = ['Freshwater Eutrophication']*4
+Marine_eutrophication_label = ['Marine Eutrophication']
+
+index_labels = Land_occupation_label + Climate_change_label + Water_consumption_label + Freshwater_consumption_label + Marine_eutrophication_label
+
+stressor_index_label = list(CF_tables.iloc[1:,0])
+print(stressor_index_label)
+
+
+
+
+liste = Footprint_tables_D_cba.iloc[0:,0].values
+
+
+print(liste)
+column_index2 = Footprint_tables_D_cba.iloc[0,1:].values
+CF_tables = CF_tables.iloc[0:,3:]
+
+column_index = CF_tables.columns.to_list()
+print(column_index)
+column_index_list_D_exp =  []
+n =200
+for i in column_index:
+    column_index_list_D_exp = column_index_list_D_exp + [i]*n
+Footprint_tables_D_cba = pd.DataFrame(Footprint_tables_D_cba.iloc[0:,1:].values, columns = column_index)
+Footprint_tables_D_pba = pd.DataFrame(Footprint_tables_D_pba.iloc[0:,1:].values,columns=column_index)
+Footprint_tables_D_imp = pd.DataFrame(Footprint_tables_D_imp.iloc[1:,1:].values,columns=column_index_list_D_exp)
+Footprint_tables_D_exp = pd.DataFrame(Footprint_tables_D_exp.iloc[1:,1:].values,columns=column_index_list_D_exp)
+#Pressure_Footprint_tables_D_cba = pd.DataFrame(Pressure_Footprint_tables_D_cba .iloc[25:128,1:].values, columns= column_index)
+Pressure_Footprint_tables_index = indexlabels = ['Annual Crops', 'Permanent Crops', 'Pasture Crops', 'Urban land', 'Extensive Forestry', 'Intensive Forestry']
+#Pressure_Footprint_tables_D_cba = pd.DataFrame(Pressure_Footprint_tables_D_cba.values, index= Pressure_Footprint_tables_index, columns=column_index)
+countries = list(Pressure_Footprint_tables_D_cba['Column1'].values)
+Pressure_Footprint_tables_D_cba = pd.DataFrame(Pressure_Footprint_tables_D_cba.iloc[0:,1])
+print(Footprint_tables_D_exp.shape)
+print(Footprint_tables_D_exp)
+print(Footprint_tables_D_cba.shape)
+Footprint_tables_D_exp = Footprint_tables_D_exp.astype(float)
+Footprint_tables_D_cba = Footprint_tables_D_cba.astype(float)
+Footprint_tables_D_pba = Footprint_tables_D_pba.astype(float)
+Footprint_tables_D_imp = Footprint_tables_D_imp.astype(float)
+listcountries = Footprint_tables_D_cba.columns.to_list()
+Pressure_Footprint_tables_D_cba = Pressure_Footprint_tables_D_cba.astype(float)
+#Footprint_tables_D_cba = Footprint_tables_D_cba.groupby(axis=1,level =0, sort= False).sum()
+#Footprint_tables_D_pba = Footprint_tables_D_pba.groupby(axis=1,level =0, sort= False).sum()
+Footprint_tables_D_imp = Footprint_tables_D_imp.groupby(axis=1,level =0, sort= False).sum()
+Footprint_tables_D_exp = Footprint_tables_D_exp.groupby(axis=1,level =0, sort= False).sum()
+Footprint_tables_D_cba= pd.DataFrame(Footprint_tables_D_cba.iloc[25:128,:].values, columns= listcountries )
+Footprint_tables_D_cba = pd.DataFrame(Footprint_tables_D_cba.sum(0))
+print(Footprint_tables_D_cba)
+Footprint_tables_D_cba['Water Footprint'] =Footprint_tables_D_cba.iloc[0:,0:]
+Pressure_Footprint_tables_D_cba['Biodiversity Footprint'] = Footprint_tables_D_cba['Water Footprint'].values
+Pressure_Footprint_tables_D_cba['Countries'] = countries
+
+print(Pressure_Footprint_tables_D_cba)
+
+stdy = Pressure_Footprint_tables_D_cba['Biodiversity Footprint'].std()
+stdx = Pressure_Footprint_tables_D_cba['Water_Consumption'].std()
+meany = Pressure_Footprint_tables_D_cba['Biodiversity Footprint'].mean()
+meanx = Pressure_Footprint_tables_D_cba['Water_Consumption'].mean()
+Pressure_Footprint_tables_D_cba['x_plot'] = (Pressure_Footprint_tables_D_cba['Water_Consumption'] - meanx)/stdx
+Pressure_Footprint_tables_D_cba['y_plot'] = (Pressure_Footprint_tables_D_cba['Biodiversity Footprint'] - meany)/stdy
+Pressure_Footprint_tables_D_cba['Continent'] = ['Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe', 'North America','Asia & Oceania','Asia & Oceania','North America','Asia & Oceania','Latin America','Asia & Oceania','Latin America','Europe','Asia & Oceania','Europe','Middle East','Asia & Oceania','Europe','Asia & Oceania','Africa','Asia & Oceania','Latin America','Europe','Africa','Middle East']
+Footprint_tables_D_cba['Continent'] = ['Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe','Europe', 'North America','Asia & Oceania','Asia & Oceania','North America','Asia & Oceania','Latin America','Asia & Oceania','Latin America','Europe','Asia & Oceania','Europe','Middle East','Asia & Oceania','Europe','Asia & Oceania','Africa','Asia & Oceania','Latin America','Europe','Africa','Middle East']
+Footprint_tables_D_cba['Countries_short_name'] = ['AUT','BEL','BUL','CYP','CZE','DEU','DEN','EST','ESP','FIN','FRA','GRC','CRI','HUN','IRE','ITA', 'LTU','LUX','LVA','MLT','NLD','POL','PRT','ROU','SWE','SVN','SLK','GBR','USA','JPN','CHN','CAN','KOR','BRA','IND','MEX','RUS','AUS','CHE','TUR','TWN','NOR','IDN','ZAF','ROW Asi','ROW Amer.', 'ROW Eur.','ROW Afr.','ROW Mid.E']
+Footprint_tables_D_cba['Countries_full_name'] = ['Austria','Belgium','Bulgaria','Cyprus','Czech Rep.','Germany','Denmark','Estonia','Spain','Finland','France','Greece','Croatia','Hungary','Ireland','Italy', 'Lithuania','Luxembourg','Latvia','Malta','Netherlands','Poland','Portugal','Romania','Sweden','Slovenia','Slovakia','Great Britain','USA','Japan','China','Canada','South Korea','Brazil','India','Mexico','Russia','Australia','Switzerland','Turkey','Taiwan','Norway','Indonesia','South Africa','ROW Asia','ROW Americas', 'ROW Europe','ROW Africa','ROW Middle East']
+names = Footprint_tables_D_cba['Countries_short_name']
+
+import matplotlib.pyplot as plt
+
+
+labels = [Footprint_tables_D_cba['Countries_full_name'].values]
+
+
+x = np.arange(0, len(Footprint_tables_D_cba.index),1)
+print(x)
+#figsize=
+figsize = (10,10)
+data = Pressure_Footprint_tables_D_cba
+ax4 = sns.scatterplot(data=data, x='x_plot', y='y_plot', hue = 'Continent', sizes=(20, 2000), palette="Set2", edgecolors="black")
+add_identity(ax4, color='r', ls='-')
+
+ax4.set_xlabel("Water Pressure Footprints", fontdict= {'size':11})
+ax4.set_ylabel("Water Impact Footprints", fontdict= {'size':11})
+ax4.set_title("Impact vs Pressure Footprints of Water Consumption", fontdict={'size':12})
+for tick in ax4.xaxis.get_major_ticks():
+    tick.label.set_fontsize(10)
+
+for tick in ax4.yaxis.get_major_ticks():
+    tick.label.set_fontsize(10)
+
+texts = []
+for i in [28,29,30,34,37,41,44,48,47]:
+ #ax.text(x=data.Household_Consumption_expenditure_cap[i] +0.0002,y=data.Imported_Footprint_share[i]+0.002,s=Biodiversity_footprint_tables_D_cba.iloc[i,7], fontsize = 8, color = 'black')
+ texts.append( ax4.text(x=data.x_plot[i] +0.00015,y=data.y_plot[i]-0.00015,s=names[i], fontsize = 9, color = 'black'))
+# show the graph
+adjustText.adjust_text(texts)
+
+# remove spines
+ax4.spines['right'].set_visible(False)
+
+ax4.spines['top'].set_visible(False)
+# x y details
+#ax4.set_ylabel('PDF.yr of species', fontsize = 10)
+ax4.set_xticks(x)
+#ax4.set_xticklabels(Footprint_tables_D_pba['Countries_full_name'], rotation = 90, fontsize = 8)
+ax4.set_xlim(-0.8, 7)
+# grid lines
+ax4.set_axisbelow(True)
+ax4.yaxis.grid(color='black', linestyle='dashed', alpha=0.2)
+# title and legend
+#ax4.set_title('Per Capita Production Based Accounts', loc ='center', fontdict = {'fontsize' : 10})
+plt.tight_layout()
+#plt.legend(['Land Occ. average', 'Climate Change', 'Water Cons.', 'Freshwater Eutrophication','Marine Eutrophication'], loc='upper right', ncol = 1, fontsize = 'medium', title = 'Impact Pathway', title_fontsize = 'medium')
+
+
+plt.show()
+
+###############################################################################################################################################################################################################################
+
+
+
+
+
+
+
+
