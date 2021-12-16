@@ -1,0 +1,133 @@
+import adjustText
+import numpy as np
+import plotly
+import plotly.io as pio
+import pymrio
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+################################################################################################################################################################
+
+
+################################################################################################################################################################
+
+
+Biodiversity_footprint_tables_D_cba  = pd.read_csv('C:/Users/Cillian/PycharmProjects/MRIO_project_Ver_01/D_imp_biod.csv')
+
+Biodiversity_footprint_tables_D_cba = pd.DataFrame(Biodiversity_footprint_tables_D_cba)
+print(Biodiversity_footprint_tables_D_cba.columns.get_loc('NO'))
+index1 = Biodiversity_footprint_tables_D_cba.iloc[1:,0].values
+Land_occupation_label = ['Land Occupation Average']*6
+Climate_change_label = ['Climate Change - Terrestrial ecosystems core']*19
+Water_consumption_label = ['Water Consumption - Terrestrial & Aquatic ecosystems core']*103
+Freshwater_consumption_label = ['Freshwater Eutrophication']*4
+Marine_consumption_label = ['Marine Eutrophication']
+index2 = Land_occupation_label + Climate_change_label + Water_consumption_label + Freshwater_consumption_label + Marine_consumption_label
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.iloc[:,8201:8401]
+
+column_index1 = ['NO']*200
+column_index2 = Biodiversity_footprint_tables_D_cba.iloc[0,:].values
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.iloc[1:,:]
+
+Biodiversity_footprint_tables_D_cba = pd.DataFrame(Biodiversity_footprint_tables_D_cba.values, index = [index2,index1], columns= [column_index1,column_index2])
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.astype(float )
+Land_footprint_tables = pd.DataFrame(Biodiversity_footprint_tables_D_cba.iloc[0:6,:]).T
+Land_footprint_tables= Land_footprint_tables.droplevel(axis=0, level=0)
+Land_footprint_tables= Land_footprint_tables.droplevel(axis=1, level=0)
+Land_footprint_tables['Total_Footprint'] = Land_footprint_tables['Annual crops']+Land_footprint_tables['Permanent Crops']+Land_footprint_tables['Pasture']+Land_footprint_tables['Urban'] + Land_footprint_tables['Extensive forestry'] + Land_footprint_tables['Intensive forestry']
+Land_footprint_tables = Land_footprint_tables.sort_values(['Total_Footprint'], ascending = [False])
+Land_footprint_tables = Land_footprint_tables.drop(axis=0, labels= 'Real estate services (70)')
+Land_footprint_tables = Land_footprint_tables.head(25)
+Land_footprint_tables = Land_footprint_tables.sort_values(['Total_Footprint'], ascending = [True])
+print(Land_footprint_tables)
+print(Biodiversity_footprint_tables_D_cba)
+Biodiversity_footprint_tables_D_cba = pd.DataFrame(Biodiversity_footprint_tables_D_cba.groupby(axis=0,level =0, sort= False).sum()).T
+print(Biodiversity_footprint_tables_D_cba)
+Biodiversity_footprint_tables_D_cba['Total_Footprint'] = (Biodiversity_footprint_tables_D_cba['Land Occupation Average'] + Biodiversity_footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core'] + Biodiversity_footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core'] + Biodiversity_footprint_tables_D_cba['Freshwater Eutrophication'])        #Categories consider different taxanomic species, therefore an average approach is used to quantify impact
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.sort_values(['Total_Footprint'], ascending = [False])
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.head(25)
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.sort_values(['Total_Footprint'], ascending = [True])
+Biodiversity_footprint_tables_D_cba = Biodiversity_footprint_tables_D_cba.droplevel(axis=0, level=0)
+print(Land_footprint_tables.index.tolist())
+as_list = Land_footprint_tables.index.tolist()
+print(as_list)
+idx1 = as_list.index('Sale, maintenance, repair of motor vehicles, motor vehicles parts, motorcycles, motor cycles parts and accessoiries')
+idx2 = as_list.index('Supporting and auxiliary transport services; travel agency services (63)')
+#idx3 = as_list.index('Wood and products of wood and cork (except furniture); articles of straw and plaiting materials (20)')
+as_list[idx1] = 'Sale and maintenance of motor vehicles'
+as_list[idx2] = 'Auxillary transport and travel services'
+#as_list[idx3] = 'Products of wood and cork'
+print(as_list)
+Land_footprint_tables['index'] = as_list
+Land_footprint_tables.set_index('index', inplace= True)
+
+
+#############################################################################################################################################################################
+x = np.arange(0, len(Biodiversity_footprint_tables_D_cba.index),1)
+
+#figsize=
+
+fig,ax2 =plt.subplots(figsize = (18, 6))
+left = len(Land_footprint_tables.index) * [0]
+ax2.barh(x,Land_footprint_tables['Annual crops'], height = 0.8)
+ax2.barh(x,Land_footprint_tables['Permanent Crops'], left= left + Land_footprint_tables['Annual crops'], height = 0.8)
+ax2.barh(x,Land_footprint_tables['Pasture'], left= left + (Land_footprint_tables['Annual crops']+Land_footprint_tables['Permanent Crops']), height= 0.8  )
+ax2.barh(x,Land_footprint_tables['Urban'], left= left + (Land_footprint_tables['Annual crops']+Land_footprint_tables['Permanent Crops']+Land_footprint_tables['Pasture']), height = 0.8 )
+ax2.barh(x,Land_footprint_tables['Extensive forestry'], left= left + (Land_footprint_tables['Annual crops']+Land_footprint_tables['Permanent Crops']+Land_footprint_tables['Pasture']+Land_footprint_tables['Urban']), height = 0.8 )
+ax2.barh(x,Land_footprint_tables['Intensive forestry'], left= left + (Land_footprint_tables['Annual crops']+Land_footprint_tables['Permanent Crops']+Land_footprint_tables['Pasture']+Land_footprint_tables['Urban'] + Land_footprint_tables['Extensive forestry']), height = 0.8 )
+
+# remove spines
+ax2.spines['right'].set_visible(False)
+ax2.spines['top'].set_visible(False)
+# x y details #
+ax2.set(xlim = [0,.00004]  )
+ax2.set_xlabel('PDF.yr of species', fontsize = 12)
+ax2.set_yticks(x)
+ax2.set_yticklabels(Land_footprint_tables.index, fontsize = 11)
+ax2.set_ylim(0.4, len(Land_footprint_tables.index))
+
+# grid lines
+ax2.set_axisbelow(True)
+ax2.xaxis.grid(color='gray', linestyle='dashed', alpha=0.2)
+# title and legend
+ax2.set_title('Embodied land use related biodiversity impacts of imported products for \nNorwegian household consumption', loc ='left', fontdict = {'fontsize' : 14})
+
+plt.legend(['Annual crops', 'Permanent crops', 'Pasture', 'Urban land','Extensive forestry','Intensive forestry'], loc='lower right', ncol = 1, fontsize = 'medium', title = 'Land use type', title_fontsize = 'medium')
+plt.tight_layout()
+from matplotlib import rcParams
+plt.subplots_adjust(left = 0.2)
+rcParams.update({'figure.autolayout': True})
+plt.show()
+
+##################################################################################################################################################################################################################
+
+'''
+fig,ax1 =plt.subplots(figsize = (18, 6))
+left = len(Biodiversity_footprint_tables_D_cba.index) * [0]
+ax1.barh(x,Biodiversity_footprint_tables_D_cba['Land Occupation Average'], height = 0.8)
+ax1.barh(x,Biodiversity_footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core'], left= left + Biodiversity_footprint_tables_D_cba['Land Occupation Average'], height = 0.8 )
+ax1.barh(x,Biodiversity_footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core'], left= left + (Biodiversity_footprint_tables_D_cba['Land Occupation Average']+Biodiversity_footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core']), height= 0.8  )
+ax1.barh(x,Biodiversity_footprint_tables_D_cba['Freshwater Eutrophication'], left= left + (Biodiversity_footprint_tables_D_cba['Land Occupation Average']+Biodiversity_footprint_tables_D_cba['Climate Change - Terrestrial ecosystems core']+Biodiversity_footprint_tables_D_cba['Water Consumption - Terrestrial & Aquatic ecosystems core']), height = 0.8 )
+
+# remove spines
+ax1.spines['right'].set_visible(False)
+ax1.spines['top'].set_visible(False)
+# x y details #
+ax1.set(xlim = [0,.0009]  )
+ax1.set_xlabel('PDF.yr of species', fontsize = 8)
+ax1.set_yticks(x)
+ax1.set_yticklabels(Biodiversity_footprint_tables_D_cba.index, fontsize = 7)
+ax1.set_ylim(0.4, len(Biodiversity_footprint_tables_D_cba.index))
+
+# grid lines
+ax1.set_axisbelow(True)
+ax1.xaxis.grid(color='gray', linestyle='dashed', alpha=0.2)
+# title and legend
+ax1.set_title('Norweigan Sectorial Biodiversity impacts', loc ='center', fontdict = {'fontsize' : 10})
+plt.legend(['Land Occ. average', 'Climate Change', 'Water Cons.', 'Freshwater Eutrophication'], loc='lower right', ncol = 1, fontsize = 'small', title = 'Impact Pathway', title_fontsize = 'small')
+plt.tight_layout()
+from matplotlib import rcParams
+plt.subplots_adjust(left = 0.2)
+rcParams.update({'figure.autolayout': True})
+plt.show()
+'''''''''
